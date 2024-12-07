@@ -60,7 +60,9 @@ function fetchApi(path, method = 'GET', body = undefined, headers = undefined) {
                     res.json()
                         .then(error => {
                             if ('error' in error && 'message' in error['error'] && 'code' in error['error'])
-                            reject(new APIError(res.status, error['error']['message'], error['error']['code']))
+                            {
+                                reject(new APIError(res.status, error['error']['message'], error['error']['code']))
+                            }
                         })
                         .catch(reject)
                 } else {
@@ -93,9 +95,9 @@ export class Connection {
      * @param {string} host
      */
     constructor(uuid, validUntil, host) {
-        this.#uuid = uuid;
-        this.#validUntil = validUntil;
-        this.#host = host;
+        this.#uuid = uuid
+        this.#validUntil = validUntil
+        this.#host = host
         this.#connected = true
     }
 
@@ -105,7 +107,7 @@ export class Connection {
     static async getAuthMethods(host) {
         const v = await fetchApi(`/api/v1/authentication/${host}`)
         return v.methods
-    } 
+    }
 
     /**
      * @template {keyof AuthMethods} TMethod

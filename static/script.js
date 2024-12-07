@@ -79,7 +79,7 @@ function createScreenElement() {
         closeButton: closeButton,
         viewButton: viewButton,
         messageButton: messageButton,
-        
+
         screen: newScreenImage,
         errorScreen: errorScreen,
         messageScreen: messageScreen,
@@ -170,7 +170,7 @@ function handleConnection(promise) {
         promise
             .then(conn => {
                 connections.push(conn)
-    
+
                 const element = createScreenElement()
                 element.container.classList.add('connection-element')
                 element.container.id = conn.uuid
@@ -180,13 +180,13 @@ function handleConnection(promise) {
                 element.messageScreen.classList.add('hidden')
                 typewriting(element.addressLabel, conn.host)
                 element.container.classList.add('connected')
-    
+
                 let isDownloading = false
                 const framebufferInterval = setInterval(async () => {
                     if (!document.hasFocus()) { return }
                     if (isDownloading) { return }
                     isDownloading = true
-    
+
                     if (!conn.connected) {
                         element.container.classList.add('disconnected')
                         element.container.classList.remove('connected')
@@ -206,7 +206,7 @@ function handleConnection(promise) {
                         })
                         const reader = new window.FileReader()
                         reader.readAsDataURL(framebuffer)
-                        reader.onloadend = function () {
+                        reader.onloadend = function() {
                             element.screen.src = reader.result + ''
                             element.screen.classList.add('revealed')
                         }
@@ -234,7 +234,7 @@ function handleConnection(promise) {
                         .then(features => {
                             console.log(features)
                             features.find(v => v.name === 'StartApp')?.setStatus(true, {
-                                applications: [ `mshta ${location.protocol}//${location.host}/message?text=${encodeURIComponent(message)}` ]
+                                applications: [`mshta ${location.protocol}//${location.host}/message?text=${encodeURIComponent(message)}`]
                             })
                                 .catch(console.error)
                                 .then(() => {
@@ -272,7 +272,7 @@ function handleConnection(promise) {
                             }).catch(reason => { console.error(reason); resolve(true) })
                         })
                     }, 3, 5000)
-    
+
                     retryAsync(() => {
                         return new Promise(resolve => {
                             conn.getUser().then(user => {
@@ -283,11 +283,11 @@ function handleConnection(promise) {
                     }, 3, 5000)
 
                 }, 1000)
-    
+
                 element.viewButton.addEventListener('click', () => {
-                    window.open(`./screen.html?host=${encodeURIComponent(conn.host)}&uuid=${encodeURIComponent(conn.uuid)}&validUntil=${encodeURIComponent(conn.validUntil)}`, '_blank')?.focus();
+                    window.open(`./screen.html?host=${encodeURIComponent(conn.host)}&uuid=${encodeURIComponent(conn.uuid)}&validUntil=${encodeURIComponent(conn.validUntil)}`, '_blank')?.focus()
                 })
-    
+
                 element.closeButton.addEventListener('click', () => {
                     element.closeButton.disabled = true
                     if (conn.connected) {
@@ -313,7 +313,7 @@ function handleConnection(promise) {
                         element.messageScreen.classList.add('hidden')
                         element.container.classList.add('state-unauthorized')
                         element.errorScreen.textContent = error.message
-    
+
                         element.closeButton.addEventListener('click', () => {
                             element.container.remove()
                         })
@@ -342,15 +342,15 @@ const queueRequest = window['queueRequest'] = function(address) {
         if (request.address === address) { return }
     }
     for (const connection of connections) {
-        if (connection.host === address)  { return }
+        if (connection.host === address) { return }
     }
     requests.push({
         connectionRequested: false,
         address: address,
     })
-}
+};
 
-; (async () => {
+(async () => {
     /** @type {Array<string>} */
     const savedConnections = JSON.parse(localStorage.getItem('savedConnections') ?? '[]')
     if (savedConnections.length > 0 &&
@@ -399,7 +399,7 @@ window.addEventListener('beforeunload', (e) => {
 })
 
 // @ts-ignore
-window['closeAll'] = function () {
+window['closeAll'] = function() {
     for (const conn of connections) {
         const container = document.getElementById(conn.uuid)
         container?.classList.add('disconnected')

@@ -34,7 +34,7 @@ if (host && uuid && validUntil) {
             })
             const reader = new window.FileReader()
             reader.readAsDataURL(framebuffer)
-            reader.onloadend = function () {
+            reader.onloadend = function() {
                 image.src = reader.result + ''
             }
         } catch (error) {
