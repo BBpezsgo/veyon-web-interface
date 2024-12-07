@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon"
+        href="https://raw.githubusercontent.com/veyon/veyon/refs/heads/master/master/data/veyon-master.ico">
+    <link href='https://fonts.googleapis.com/css?family=PT Mono' rel='stylesheet'>
+    <title>Veyon</title>
+</head>
+
+<body>
+    <style>
+        * {
+            font-family: 'PT Mono', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        html,
+        body {
+            background-color: #3c3c3c;
+        }
+
+        .computer-screen {
+            width: 320px;
+            height: auto;
+            margin: 16px;
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            display: inline-flex;
+            background-color: #000;
+            flex-direction: column;
+            padding: 12px;
+            outline: 4px solid #3c3c3c;
+            outline-offset: -8px;
+        }
+
+        .computer-screen>.computer-header {
+            flex: 1 0 32px;
+            color: #fff;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .computer-screen>.computer-header:nth-of-type(1)>span:nth-of-type(1) {
+            flex: 1 1 100%;
+            text-align: right;
+        }
+
+        .computer-screen>.computer-header:nth-of-type(2)>span:nth-of-type(1) {
+            flex: 1 1 100%;
+            text-align: left;
+        }
+
+        .computer-screen>.computer-header:nth-of-type(2)>span:nth-of-type(2) {
+            flex: 1 1 100%;
+            text-align: right;
+        }
+
+        .computer-screen>.computer-header button {
+            font-size: 14px;
+            padding: 0px 6px;
+        }
+
+        .computer-screen>.screen-container {
+            flex: 1 1 240px;
+            color: #fff;
+        }
+
+        .computer-screen>.screen-container>* {
+            position: absolute;
+            width: 320px;
+            height: 240px;
+        }
+
+        .computer-screen>.screen-container>div.error-screen {
+            text-align: center;
+            align-content: center;
+            color: #ec2a2a;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .computer-screen>.screen-container>div.message-screen {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .message-send-container {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .messages-container>div {
+            border: 2px solid #3c3c3c;
+            margin-bottom: 4px;
+        }
+
+        .message-send-container>input[type=text] {
+            flex: 1;
+            background: transparent;
+            border: 4px solid #3c3c3c;
+            color: #fff;
+            margin-right: 4px;
+        }
+
+        .message-send-container>input[type=text]:focus-visible {
+            border-color: #fff;
+            outline: none;
+        }
+
+        .message-send-container>button {
+            height: unset;
+        }
+
+        .computer-screen.disconnected {
+            pointer-events: none;
+            cursor: default !important;
+            opacity: .5;
+        }
+
+        img.revealing {
+            --s: 240px;
+            width: var(--s);
+            height: var(--s);
+            box-sizing: border-box;
+            transition: 1s;
+            background: #000;
+            padding-bottom: var(--s);
+            object-fit: cover;
+        }
+
+        img.revealing.revealed {
+            padding-bottom: unset;
+        }
+
+        button {
+            border: none;
+            padding: 0px 2px;
+            height: 20px;
+            margin: 0px 4px 0px 0px;
+            line-height: normal;
+            background-color: #222;
+            color: #fff;
+            font-weight: bolder;
+        }
+
+        .message-outgoing::before {
+            content: '<';
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .message-incoming::before {
+            content: '>';
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        button:focus,
+        button:hover {
+            background-color: #3c3c3c;
+        }
+
+        button:focus-visible {
+            outline: none;
+        }
+
+        button:active {
+            background-color: #fff;
+            color: #000;
+        }
+    </style>
+    <header>
+        <button onclick="window.closeAll()">Close all</button>
+    </header>
+    <div id="container"></div>
+    <script src="./script.js" type="module"></script>
+</body>
+
+</html>
