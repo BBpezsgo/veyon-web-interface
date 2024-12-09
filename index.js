@@ -29,6 +29,13 @@ if (addresses.length === 0) {
     process.exit(1)
 }
 
+// This is for my school
+if (addresses.length > 1) {
+    for (let i = 0; i < addresses.length; i++) {
+        if (!addresses[i].startsWith('10.')) addresses.splice(i--, 1)
+    }
+}
+
 if (addresses.length > 1) {
     console.error('Multiple network interfaces found to host on')
     process.exit(1)

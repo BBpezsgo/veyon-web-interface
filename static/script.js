@@ -1,6 +1,5 @@
 'use strict'
 
-import html from './html.js'
 import * as Veyon from './veyon.js'
 
 function createScreenElement() {
@@ -73,17 +72,30 @@ function createScreenElement() {
     return {
         container: container,
 
+        headerButtons: {
+            close: closeButton,
+            view: viewButton,
+            message: messageButton,
+        },
+
+        screens: {
+            screen: newScreenImage,
+            error: errorScreen,
+            message: messageScreen,
+
+            /**
+             * @param {'screen' | 'error' | 'message'} screen
+             */
+            set: function(screen) {
+                this.screen.classList[screen === 'screen' ? 'remove' : 'add']('hidden')
+                this.error.classList[screen === 'error' ? 'remove' : 'add']('hidden')
+                this.message.classList[screen === 'message' ? 'remove' : 'add']('hidden')
+            },
+        },
+
         userName: screenUserNameLabel,
         hostName: computerNameLabel,
         addressLabel: addressLabel,
-
-        closeButton: closeButton,
-        viewButton: viewButton,
-        messageButton: messageButton,
-
-        screen: newScreenImage,
-        errorScreen: errorScreen,
-        messageScreen: messageScreen,
 
         messageInput: messageInput,
         messageSend: messageSend,
@@ -176,22 +188,23 @@ function handleConnection(promise) {
                 element.container.classList.add('connection-element')
                 element.container.id = conn.uuid
                 element.container.dataset['address'] = conn.host
-                element.errorScreen.classList.add('hidden')
-                element.screen.classList.remove('hidden')
-                element.messageScreen.classList.add('hidden')
+                element.screens.set('screen')
                 typewriting(element.addressLabel, conn.host)
-                element.container.classList.add('connected')
 
                 let isDownloading = false
-                const framebufferInterval = setInterval(async () => {
-                    if (!document.hasFocus()) { return }
+                /**
+                 * @param {boolean} force
+                 */
+                async function refreshFramebuffer(force) {
+                    if (!force) {
+                        if (!document.hasFocus()) { return }
+                        if (!isElementInViewport(element.screens.screen)) { return }
+                        if (!element.screens.screen.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) { return }
+                    }
                     if (isDownloading) { return }
                     isDownloading = true
 
                     if (!conn.connected) {
-                        element.container.classList.add('disconnected')
-                        element.container.classList.remove('connected')
-                        element.closeButton.style.pointerEvents = 'all'
                         clearInterval(framebufferInterval)
                         isDownloading = false
                         return
@@ -208,15 +221,13 @@ function handleConnection(promise) {
                         const reader = new window.FileReader()
                         reader.readAsDataURL(framebuffer)
                         reader.onloadend = function() {
-                            element.screen.src = reader.result + ''
-                            element.screen.classList.add('revealed')
+                            element.screens.screen.src = reader.result + ''
+                            element.screens.screen.classList.add('revealed')
                         }
                     } catch (error) {
                         if (error instanceof Veyon.APIError && error.code === 2) {
-                            element.errorScreen.textContent = error.message
-                            element.container.classList.add('disconnected')
-                            element.container.classList.remove('connected')
-                            element.closeButton.style.pointerEvents = 'all'
+                            element.screens.error.textContent = error.message
+                            element.screens.set('error')
                             clearInterval(framebufferInterval)
                         } else {
                             console.error(error)
@@ -224,10 +235,12 @@ function handleConnection(promise) {
                     } finally {
                         isDownloading = false
                     }
-                }, 2000)
+                }
+
+                const framebufferInterval = setInterval(() => refreshFramebuffer(false), 2000)
 
                 element.messageSend.addEventListener('click', () => {
-                    if (element.messageScreen.classList.contains('hidden')) { return }
+                    if (element.screens.message.classList.contains('hidden')) { return }
                     const message = element.messageInput.value
                     element.messageSend.disabled = true
 
@@ -242,7 +255,7 @@ function handleConnection(promise) {
                                     const newMessageElement = document.createElement('div')
                                     newMessageElement.textContent = `${message}`
                                     newMessageElement.classList.add('message-outgoing')
-                                    element.messageScreen.getElementsByClassName('messages-container').item(0)?.appendChild(newMessageElement)
+                                    element.screens.message.getElementsByClassName('messages-container').item(0)?.appendChild(newMessageElement)
                                 })
                                 .finally(() => {
                                     element.messageSend.disabled = false
@@ -254,17 +267,17 @@ function handleConnection(promise) {
                         })
                 })
 
-                element.messageButton.addEventListener('click', () => {
-                    if (element.messageScreen.classList.contains('hidden')) {
-                        element.screen.classList.add('hidden')
-                        element.messageScreen.classList.remove('hidden')
+                element.screens.message.addEventListener('click', () => {
+                    if (element.screens.message.classList.contains('hidden')) {
+                        element.screens.set('message')
                     } else {
-                        element.screen.classList.remove('hidden')
-                        element.messageScreen.classList.add('hidden')
+                        element.screens.set('screen')
                     }
                 })
 
                 setTimeout(() => {
+                    refreshFramebuffer(true)
+
                     retryAsync(() => {
                         return new Promise(resolve => {
                             conn.getSession().then(session => {
@@ -282,21 +295,16 @@ function handleConnection(promise) {
                             }).catch(reason => { console.error(reason); resolve(true) })
                         })
                     }, 3, 5000)
-
                 }, 1000)
 
-                element.viewButton.addEventListener('click', () => {
+                element.headerButtons.view.addEventListener('click', () => {
                     window.open(`./screen.html?host=${encodeURIComponent(conn.host)}&uuid=${encodeURIComponent(conn.uuid)}&validUntil=${encodeURIComponent(conn.validUntil)}`, '_blank')?.focus()
                 })
 
-                element.closeButton.addEventListener('click', () => {
-                    element.closeButton.disabled = true
+                element.headerButtons.close.addEventListener('click', () => {
+                    element.headerButtons.close.disabled = true
                     if (conn.connected) {
-                        conn.destroy().finally(() => element.closeButton.disabled = false)
-                        element.container.classList.add('disconnected')
-                        element.container.classList.remove('connected')
-                        element.closeButton.style.pointerEvents = 'all'
-                        element.closeButton.style.pointerEvents = 'all'
+                        conn.destroy().finally(() => element.headerButtons.close.disabled = false)
                         clearInterval(framebufferInterval)
                     } else {
                         element.container.remove()
@@ -309,13 +317,10 @@ function handleConnection(promise) {
                 if (error instanceof Veyon.APIError) {
                     if (error.code === 6) {
                         const element = createScreenElement()
-                        element.errorScreen.classList.remove('hidden')
-                        element.screen.classList.add('hidden')
-                        element.messageScreen.classList.add('hidden')
-                        element.container.classList.add('state-unauthorized')
-                        element.errorScreen.textContent = error.message
+                        element.screens.set('error')
+                        element.screens.error.textContent = error.message
 
-                        element.closeButton.addEventListener('click', () => {
+                        element.headerButtons.close.addEventListener('click', () => {
                             element.container.remove()
                         })
                     }
@@ -327,11 +332,24 @@ function handleConnection(promise) {
 }
 
 function loadCredentials() {
-    let username = localStorage.getItem('username') ?? prompt('Felhasználó:', 'GSZI\\') ?? ''
-    let password = localStorage.getItem('password') ?? prompt('Jelszó:', 'asdf123..') ?? ''
+    let username = localStorage.getItem('username') ?? prompt('Login:', 'GSZI\\') ?? ''
+    let password = localStorage.getItem('password') ?? prompt('Password:', 'asdf123..') ?? ''
     localStorage.setItem('username', username)
     localStorage.setItem('password', password)
     return { username, password }
+}
+
+/**
+ * @param {HTMLElement} element
+ */
+function isElementInViewport(element) {
+    const rect = element.getBoundingClientRect()
+    return (
+        rect.bottom > 0 &&
+        rect.right > 0 &&
+        rect.top < (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.left < (window.innerWidth || document.documentElement.clientWidth)
+    )
 }
 
 /**
@@ -391,7 +409,7 @@ const queueRequest = window['queueRequest'] = function(address) {
             break
         }
     }, 1000)
-})()
+})();
 
 window.addEventListener('beforeunload', (e) => {
     for (const conn of connections) {
@@ -403,8 +421,6 @@ window.addEventListener('beforeunload', (e) => {
 window['closeAll'] = function() {
     for (const conn of connections) {
         const container = document.getElementById(conn.uuid)
-        container?.classList.add('disconnected')
-        container?.classList.remove('connected')
         conn.destroy()
             .then(() => {
                 container?.remove()
@@ -412,7 +428,6 @@ window['closeAll'] = function() {
     }
 };
 
-(async () => {
-    const state = new html.State(0)
-    document.body.insertAdjacentElement('beforeend', html`<button onclick=${() => state.value++}>${state}</button>`)
-})()
+for (let d = 1; d <= 20; d++) {
+    queueRequest(`10.10.104.${d}`)
+}
