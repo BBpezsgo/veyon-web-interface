@@ -1,5 +1,6 @@
 'use strict'
 
+import html from './html.js'
 import * as Veyon from './veyon.js'
 
 function createScreenElement() {
@@ -409,4 +410,9 @@ window['closeAll'] = function() {
                 container?.remove()
             })
     }
-}
+};
+
+(async () => {
+    const state = new html.State(0)
+    document.body.insertAdjacentElement('beforeend', html`<button onclick=${() => state.value++}>${state}</button>`)
+})()
