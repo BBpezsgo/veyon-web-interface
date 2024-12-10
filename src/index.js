@@ -117,7 +117,7 @@ server.addListener('request', (req, res) => {
                 res.writeHead(200, {
                     'content-type': 'text/html'
                 })
-                let html = fs.readFileSync('message.html', 'utf8')
+                let html = fs.readFileSync(path.join(__dirname, '..', 'message.html'), 'utf8')
                 html = html.replace(/\bMESSAGE\b/g, text)
                 html = html.replace(/\bHOST\b/g, `${serverAddress}:${SERVER_PORT}`)
                 res.write(html)
